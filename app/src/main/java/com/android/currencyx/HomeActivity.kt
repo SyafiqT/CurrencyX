@@ -6,18 +6,17 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import java.lang.RuntimeException
 
 class HomeActivity : AppCompatActivity() {
 
-    lateinit var newsFragment: Fragment
+    lateinit var NewFragment: Fragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
-        val viewPager: ViewPager2 = findViewById<ViewPager2>(R.id.viewPager)
+        val viewPager = findViewById<ViewPager2>(R.id.viewPager)
 
         viewPager.adapter = object: FragmentStateAdapter(this) {
             override fun getItemCount(): Int {
@@ -26,7 +25,7 @@ class HomeActivity : AppCompatActivity() {
 
             override fun createFragment(position: Int): Fragment {
                 return when(position) {
-                    0 -> NewsFragment()
+                    0 -> NewFragment()
                     1 -> CurrencyConverterFragment()
                     2 -> CalculatorFragment()
                     else -> throw RuntimeException()
