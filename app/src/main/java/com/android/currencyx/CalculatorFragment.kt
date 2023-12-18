@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 class CalculatorFragment : Fragment() {
 
     private lateinit var resultTextView: TextView
+    private lateinit var inputTextView: TextView
     private var currentInput: StringBuilder = StringBuilder()
 
     override fun onCreateView(
@@ -20,6 +21,7 @@ class CalculatorFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_calculator, container, false)
 
         resultTextView = view.findViewById(R.id.angkaKeluar)
+        inputTextView = view.findViewById(R.id.angkaMasuk)
 
         val buttons = arrayOf(
             view.findViewById<Button>(R.id.btn0),
@@ -56,23 +58,32 @@ class CalculatorFragment : Fragment() {
             R.id.btnHapus -> clearInput()
             R.id.btnBackspace -> clearOneInput()
             R.id.btnPersen -> appendToInput("%")
-            else -> appendToInput(button.text.toString())
+            else -> {
+                appendToInput(button.text.toString())
+                updateInputText()
+            }
         }
+        updateResultText()
     }
 
     private fun appendToInput(value: String) {
         currentInput.append(value)
-        updateResultText()
+    }
+
+    private fun updateInputText() {
+        inputTextView.text = currentInput.toString()
     }
 
     private fun clearInput() {
         currentInput = StringBuilder()
+        updateInputText()
         updateResultText()
     }
 
     private fun clearOneInput() {
         if (currentInput.isNotEmpty()) {
             currentInput.deleteCharAt(currentInput.length - 1)
+            updateInputText()
             updateResultText()
         }
     }
@@ -153,8 +164,16 @@ class CalculatorFragment : Fragment() {
                 } else {
                     throw RuntimeException("Unexpected: " + ch)
                 }
-                if (eat('^')) x = Math.pow(x, parseFactor())
-                if (eat('%')) x = x % parseFactor()
+
+                // Check for percentage after parsing a factor
+                while (true) {
+                    when {
+                        eat('^') -> x = Math.pow(x, parseFactor())
+                        eat('%') -> x /= 100.0  // Divide by 100 for percentage
+                        else -> break
+                    }
+                }
+
                 return x
             }
         }.parse()
