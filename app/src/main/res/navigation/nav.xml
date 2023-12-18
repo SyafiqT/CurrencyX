@@ -29,16 +29,7 @@
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_homeFragment_to_newFragment"
-            app:destination="@id/newFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/newFragment"
-        android:name="com.android.currencyx.NewFragment"
-        android:label="fragment_new"
-        tools:layout="@layout/fragment_new" >
-        <action
-            android:id="@+id/action_newFragment_to_detailBeritaFragment"
+            android:id="@+id/action_homeFragment_to_detailBeritaFragment"
             app:destination="@id/detailBeritaFragment" />
     </fragment>
 </navigation>

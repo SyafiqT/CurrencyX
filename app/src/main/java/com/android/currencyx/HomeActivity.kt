@@ -14,35 +14,35 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+//
+//        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
+//        val viewPager = findViewById<ViewPager2>(R.id.viewPager)
+//
+//        viewPager.adapter = object: FragmentStateAdapter(this) {
+//            override fun getItemCount(): Int {
+//                return 3
+//            }
+//
+//            override fun createFragment(position: Int): Fragment {
+//                return when(position) {
+//                    0 -> NewFragment()
+//                    1 -> CurrencyConverterFragment()
+//                    2 -> CalculatorFragment()
+//                    else -> throw RuntimeException()
+//                }
+//            }
 
-        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
-        val viewPager = findViewById<ViewPager2>(R.id.viewPager)
+//        }
 
-        viewPager.adapter = object: FragmentStateAdapter(this) {
-            override fun getItemCount(): Int {
-                return 3
-            }
-
-            override fun createFragment(position: Int): Fragment {
-                return when(position) {
-                    0 -> NewFragment()
-                    1 -> CurrencyConverterFragment()
-                    2 -> CalculatorFragment()
-                    else -> throw RuntimeException()
-                }
-            }
-
-        }
-
-        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-            when(item.itemId) {
-                R.id.news -> viewPager.currentItem = 0
-                R.id.convert -> viewPager.currentItem = 1
-                R.id.calculator -> viewPager.currentItem = 2
-                else -> return@setOnNavigationItemSelectedListener false
-            }
-            return@setOnNavigationItemSelectedListener true
-        }
+//        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+//            when(item.itemId) {
+//                R.id.news -> viewPager.currentItem = 0
+//                R.id.convert -> viewPager.currentItem = 1
+//                R.id.calculator -> viewPager.currentItem = 2
+//                else -> return@setOnNavigationItemSelectedListener false
+//            }
+//            return@setOnNavigationItemSelectedListener true
+//        }
 
 //        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
 //            when (item.itemId) {

@@ -9,9 +9,13 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.android.model.modelNews
 import com.bumptech.glide.Glide
+import com.google.firebase.storage.FirebaseStorage
 
 
-class RecyclerNew(private val newList: List<modelNews>) :
+class RecyclerNew(
+    private val newList: List<modelNews>,
+    private val onItemClick: (modelNews) -> Unit
+) :
     RecyclerView.Adapter<RecyclerNew.NewViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewViewHolder {
@@ -24,14 +28,7 @@ class RecyclerNew(private val newList: List<modelNews>) :
         val new = newList[position]
         holder.bind(new)
         holder.itemView.setOnClickListener {
-            // Mengakses NavController dan melakukan navigasi ke DetailFragment dengan argumen yang diperlukan
-            val action = NewFragmentDirections.actionNewFragmentToDetailBeritaFragment(
-                new.judul,
-                new.isi,
-                new.tanggal,
-                new.gambar
-            )
-            it.findNavController().navigate(action)
+            onItemClick(new)
         }
     }
 
@@ -47,9 +44,23 @@ class RecyclerNew(private val newList: List<modelNews>) :
         fun bind(new :modelNews) {
             tvTitle.text = new.judul
             tvDate.text = new.tanggal
-            Glide.with(itemView)
-                .load(new.gambar) // post.profil berisi URL gambar
-                .into(gambar) // profil adalah ImageView
+
+            // Ambil URL gambar sesuai dengan kunci yang ada di Firebase Realtime Database
+            val storageRef = FirebaseStorage.getInstance().reference.child("berita/${new.id}/image.jpg")
+
+            storageRef.downloadUrl.addOnSuccessListener { uri ->
+                // Simpan URL gambar ke properti imgURL pada objek spot yang sesuai
+                new.gambar = uri.toString()
+
+                Glide.with(itemView)
+                    .load(new.gambar) // post.profil berisi URL gambar
+                    .into(gambar) // profil adalah ImageView
+            }.addOnFailureListener {
+                // Handle error jika gagal mengambil URL gambar dari Cloud Storage
+            }
+//            Glide.with(itemView)
+//                .load(new.gambar) // post.profil berisi URL gambar
+//                .into(gambar) // profil adalah ImageView
 
         }
     }

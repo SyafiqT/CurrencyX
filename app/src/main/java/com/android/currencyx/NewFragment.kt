@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.currencyx.databinding.FragmentNewBinding
@@ -65,22 +67,32 @@ class NewFragment : Fragment() {
 
 
 
-                    val new = modelNews(judul, isi, tanggal,"", )
+                    val new = modelNews(snapshot.key!!, judul, isi, tanggal,"", )
                     newList.add(new)
 
-                    // Ambil URL gambar sesuai dengan kunci yang ada di Firebase Realtime Database
-                    val storageRef = FirebaseStorage.getInstance().reference.child("berita/${snapshot.key}/image.jpg")
-
-                    storageRef.downloadUrl.addOnSuccessListener { uri ->
-                        // Simpan URL gambar ke properti imgURL pada objek spot yang sesuai
-                        new.gambar = uri.toString()
-                    }.addOnFailureListener {
-                        // Handle error jika gagal mengambil URL gambar dari Cloud Storage
-                    }
+//                    // Ambil URL gambar sesuai dengan kunci yang ada di Firebase Realtime Database
+//                    val storageRef = FirebaseStorage.getInstance().reference.child("berita/${snapshot.key}/image.jpg")
+//
+//                    storageRef.downloadUrl.addOnSuccessListener { uri ->
+//                        // Simpan URL gambar ke properti imgURL pada objek spot yang sesuai
+//                        new.gambar = uri.toString()
+//                    }.addOnFailureListener {
+//                        // Handle error jika gagal mengambil URL gambar dari Cloud Storage
+//                    }
                 }
 
                 // Gunakan spotList dalam RecyclerViewAdapter
-                val adapter = RecyclerNew(newList)
+                val adapter = RecyclerNew(newList) {
+
+                    // Mengakses NavController dan melakukan navigasi ke DetailFragment dengan argumen yang diperlukan
+                    val action = HomeFragmentDirections.actionHomeFragmentToDetailBeritaFragment(
+                        it.judul,
+                        it.isi,
+                        it.tanggal,
+                        it.gambar
+                    )
+                    findNavController().navigate(action)
+                }
                 recyclerView.layoutManager = LinearLayoutManager(requireContext())
                 recyclerView.adapter = adapter
                 adapter.notifyDataSetChanged()
