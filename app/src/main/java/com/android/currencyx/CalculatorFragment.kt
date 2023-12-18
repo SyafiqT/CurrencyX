@@ -1,59 +1,181 @@
 package com.android.currencyx
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.fragment.app.Fragment
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [CalculatorFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class CalculatorFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var resultTextView: TextView
+    private lateinit var inputTextView: TextView
+    private var currentInput: StringBuilder = StringBuilder()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_calculator, container, false)
+        val view = inflater.inflate(R.layout.fragment_calculator, container, false)
+
+        resultTextView = view.findViewById(R.id.angkaKeluar)
+        inputTextView = view.findViewById(R.id.angkaMasuk)
+
+        val buttons = arrayOf(
+            view.findViewById<Button>(R.id.btn0),
+            view.findViewById<Button>(R.id.btn1),
+            view.findViewById<Button>(R.id.btn2),
+            view.findViewById<Button>(R.id.btn3),
+            view.findViewById<Button>(R.id.btn4),
+            view.findViewById<Button>(R.id.btn5),
+            view.findViewById<Button>(R.id.btn6),
+            view.findViewById<Button>(R.id.btn7),
+            view.findViewById<Button>(R.id.btn8),
+            view.findViewById<Button>(R.id.btn9),
+            view.findViewById<Button>(R.id.btnTambah),
+            view.findViewById<Button>(R.id.btnBagi),
+            view.findViewById<Button>(R.id.btnKali),
+            view.findViewById<Button>(R.id.btnKurang),
+            view.findViewById<Button>(R.id.btnHasil),
+            view.findViewById<Button>(R.id.btnHapus),
+            view.findViewById<Button>(R.id.btnTitik),
+            view.findViewById<Button>(R.id.btnPersen),
+            view.findViewById<Button>(R.id.btnBackspace)
+        )
+
+        for (button in buttons) {
+            button.setOnClickListener { onButtonClick(button) }
+        }
+
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CalculatorFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CalculatorFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun onButtonClick(button: Button) {
+        when (button.id) {
+            R.id.btnHasil -> calculateResult()
+            R.id.btnHapus -> clearInput()
+            R.id.btnBackspace -> clearOneInput()
+            R.id.btnPersen -> appendToInput("%")
+            else -> {
+                appendToInput(button.text.toString())
+                updateInputText()
+            }
+        }
+        updateResultText()
+    }
+
+    private fun appendToInput(value: String) {
+        currentInput.append(value)
+    }
+
+    private fun updateInputText() {
+        inputTextView.text = currentInput.toString()
+    }
+
+    private fun clearInput() {
+        currentInput = StringBuilder()
+        updateInputText()
+        updateResultText()
+    }
+
+    private fun clearOneInput() {
+        if (currentInput.isNotEmpty()) {
+            currentInput.deleteCharAt(currentInput.length - 1)
+            updateInputText()
+            updateResultText()
+        }
+    }
+
+    private fun calculateResult() {
+        try {
+            val result = eval(currentInput.toString())
+            currentInput = StringBuilder(result.toString())
+            updateResultText()
+        } catch (e: Exception) {
+            currentInput = StringBuilder("Error")
+            updateResultText()
+        }
+    }
+
+    private fun updateResultText() {
+        resultTextView.text = currentInput.toString()
+    }
+
+    private fun eval(input: String): Double {
+        return object : Any() {
+            var pos = -1
+            var ch = 0.toChar()
+
+            fun nextChar() {
+                ch = if (++pos < input.length) input[pos] else (-1).toChar()
+            }
+
+            fun eat(charToEat: Char): Boolean {
+                while (ch == ' ') nextChar()
+                if (ch == charToEat) {
+                    nextChar()
+                    return true
+                }
+                return false
+            }
+
+            fun parse(): Double {
+                nextChar()
+                val x = parseExpression()
+                if (pos < input.length) throw RuntimeException("Unexpected: " + ch)
+                return x
+            }
+
+            fun parseExpression(): Double {
+                var x = parseTerm()
+                while (true) {
+                    when {
+                        eat('+') -> x += parseTerm()
+                        eat('-') -> x -= parseTerm()
+                        else -> return x
+                    }
                 }
             }
+
+            fun parseTerm(): Double {
+                var x = parseFactor()
+                while (true) {
+                    when {
+                        eat('*') -> x *= parseFactor()
+                        eat('/') -> x /= parseFactor()
+                        else -> return x
+                    }
+                }
+            }
+
+            fun parseFactor(): Double {
+                if (eat('+')) return parseFactor()
+                if (eat('-')) return -parseFactor()
+                var x: Double
+                val startPos = pos
+                if (eat('(')) {
+                    x = parseExpression()
+                    eat(')')
+                } else if ((ch in '0'..'9') || ch == '.') {
+                    while ((ch in '0'..'9') || ch == '.') nextChar()
+                    x = input.substring(startPos, pos).toDouble()
+                } else {
+                    throw RuntimeException("Unexpected: " + ch)
+                }
+
+                // Check for percentage after parsing a factor
+                while (true) {
+                    when {
+                        eat('^') -> x = Math.pow(x, parseFactor())
+                        eat('%') -> x /= 100.0  // Divide by 100 for percentage
+                        else -> break
+                    }
+                }
+
+                return x
+            }
+        }.parse()
     }
 }
