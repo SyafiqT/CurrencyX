@@ -1,8 +1,7 @@
 package com.android.currencyx
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +26,7 @@ class CurrencyConverterFragment : Fragment() {
     private lateinit var spinnerSecondConversion: Spinner
 
     private var conversionRates: Map<String, Double> = emptyMap()
-
+    
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://api.currencyapi.com/")
         .addConverterFactory(GsonConverterFactory.create())
