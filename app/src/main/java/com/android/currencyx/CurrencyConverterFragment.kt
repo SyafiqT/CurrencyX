@@ -1,13 +1,13 @@
 package com.android.currencyx
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
@@ -26,7 +26,7 @@ class CurrencyConverterFragment : Fragment() {
     private lateinit var spinnerSecondConversion: Spinner
 
     private var conversionRates: Map<String, Double> = emptyMap()
-
+    
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://api.currencyapi.com/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -51,10 +51,13 @@ class CurrencyConverterFragment : Fragment() {
         etSecondConversion = view.findViewById(R.id.et_secondConversion)
         spinnerFirstConversion = view.findViewById(R.id.spinner_firstConversion)
         spinnerSecondConversion = view.findViewById(R.id.spinner_secondConversion)
+        val swapButton: Button = view.findViewById(R.id.btn_swap)
 
         initializeSpinners()
         initializeEditTextListeners()
         fetchConversionRates()
+        swapButton.setOnClickListener(::onSwapButtonClick)
+
 
         return view
     }
@@ -129,6 +132,27 @@ class CurrencyConverterFragment : Fragment() {
         })
     }
 
+    fun onSwapButtonClick(view: View) {
+        // Get the selected items and values from the spinners and EditTexts
+        val firstCurrency = spinnerFirstConversion.selectedItem.toString()
+        val secondCurrency = spinnerSecondConversion.selectedItem.toString()
+        val firstAmount = etFirstConversion.text.toString()
+
+        // Swap the selected items in the spinners
+        spinnerFirstConversion.setSelection(getSpinnerIndex(spinnerFirstConversion, secondCurrency))
+        spinnerSecondConversion.setSelection(getSpinnerIndex(spinnerSecondConversion, firstCurrency))
+
+        // Swap the values in the EditTexts
+        etFirstConversion.setText(etSecondConversion.text.toString())
+        etSecondConversion.setText(firstAmount)
+    }
+
+    private fun getSpinnerIndex(spinner: Spinner, value: String): Int {
+        val adapter = spinner.adapter as? ArrayAdapter<CharSequence>
+        return adapter?.getPosition(value) ?: 0
+    }
+
+
     private fun fetchConversionRates() {
         val call = currencyApi.getConversionRates(
             "IDR",
@@ -171,7 +195,7 @@ class CurrencyConverterFragment : Fragment() {
 
             val convertedAmount = amount * conversionRate
 
-            etSecondConversion.setText(String.format("%.2f", convertedAmount))
+            etSecondConversion.setText(String.format("%.6f", convertedAmount))
         } else {
             etSecondConversion.text.clear()
         }
